@@ -21,30 +21,23 @@ if __name__ == '__main__':
         x1_prym.append((result.x[0] - 6) ** 2)
         x2_prym.append(result.x[0] ** 2)
 
-    problem = Problem(1, 2)
-    problem.types[:] = Real(-12, 12)
-    nondominated_solutions = []
-
 
     def shaffer(x):
-        return [x[0] ** 2, (x[0] - a - 1) ** 2]
+        return [x[0] ** 2, (x[0] - 6) ** 2]
 
 
+    problem = Problem(1, 2)
+    problem.types[:] = Real(-12, 12)
     problem.function = shaffer
+    algorithm = NSGAII(problem)
+    algorithm.run(500)
+    nondominated_solutions = nondominated(algorithm.result)
 
-    for a in np.arange(0, 1, 0.1):
-        algorithm = NSGAII(problem)
-        algorithm.run(300)
-        nondominated_solutions.append(nondominated(algorithm.result))
-
-    for solutions in nondominated_solutions:
-        print('---------')
-        for solution in solutions:
-            print(solution.objectives)
-        print('---------')
-    
     plt.figure(1)
     plt.plot(x1, x2, 'b-', x1_prym, x2_prym, 'r*')
+    plt.plot([s.objectives[0] for s in nondominated_solutions],
+             [s.objectives[1] for s in nondominated_solutions], 'g+')
+    plt.legend(['numeric', 'multi-start with agregation', 'mutli obj ga'])
     plt.axis([-5, 50, -5, 50])
     plt.xlabel('(x-6)^2')
     plt.ylabel('x^2')
